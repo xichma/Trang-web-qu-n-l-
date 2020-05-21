@@ -14,7 +14,7 @@ class UserController extends Controller
 
         if ($search_term)
         {
-            $results = User::where('name', 'LIKE', '%'.$search_term.'%')->paginate(10);
+            $results = User::where('email', '=', $search_term)->paginate(10);
         }
         else
         {
