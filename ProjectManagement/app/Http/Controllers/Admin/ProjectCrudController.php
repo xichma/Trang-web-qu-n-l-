@@ -85,7 +85,7 @@ class ProjectCrudController extends CrudController
         $item = Project::create($data);
         $this->data['entry'] = $this->crud->entry = $item;
         $this->uploadDocument($item,$data["document"]);
-        $this->addMember($item,$data["user_id"]);
+        $this->addMember($item,$data["user_id"] ?? []);
 
         // show a success message
         \Alert::success(trans('backpack::crud.insert_success'))->flash();
@@ -243,7 +243,7 @@ class ProjectCrudController extends CrudController
             'placeholder' => "Select member ",
             'minimum_input_length' => 2,
             'pivot' => true,
-            'hint' => "you can choose members to join this project now or latter"
+            'hint' => "you can search members to join this project by their email now or latter"
         ]);
     }
 
