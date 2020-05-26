@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+use PackageVersions\Versions;
+
 return [
 
     /*
@@ -121,6 +124,7 @@ return [
     'scripts' => [
         // Backstrap includes jQuery, Bootstrap, CoreUI, PNotify, Popper
         'packages/backpack/base/js/bundle.js',
+        'plugin/facebook/comment.js',
 
         // examples (everything inside the bundle, loaded from CDN)
         // 'https://code.jquery.com/jquery-3.4.1.min.js',
@@ -149,7 +153,7 @@ return [
     // All JS and CSS assets defined above have this string appended as query string (?v=string).
     // If you want to manually trigger cachebusting for all styles and scripts,
     // append or prepent something to the string below, so that it's different.
-    'cachebusting_string' => \PackageVersions\Versions::getVersion('backpack/crud'),
+    'cachebusting_string' => Versions::getVersion('backpack/crud'),
 
     /*
     |--------------------------------------------------------------------------
@@ -213,7 +217,7 @@ return [
     // Can be a single class or an array of clases
     'middleware_class' => [
         App\Http\Middleware\CheckIfAdmin::class,
-        \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        ConvertEmptyStringsToNull::class,
         // \Backpack\CRUD\app\Http\Middleware\UseBackpackAuthGuardInsteadOfDefaultAuthGuard::class,
     ],
 

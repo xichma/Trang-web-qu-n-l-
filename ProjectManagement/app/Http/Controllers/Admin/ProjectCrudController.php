@@ -2,26 +2,33 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Alert;
 use App\Http\Requests\ProjectRequest;
 use App\Models\Project;
 use App\User;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
-use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
-use Illuminate\Support\Facades\Auth;
+use Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
+use Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
+use Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
+use Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
+use Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
+use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
+use Str;
 
 /**
  * Class ProjectCrudController
  * @package App\Http\Controllers\Admin
- * @property-read \Backpack\CRUD\app\Library\CrudPanel\CrudPanel $crud
+ * @property-read CrudPanel $crud
  */
 class ProjectCrudController extends CrudController
 {
-    use \Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
-    use \Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
-    use \Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
-    use \Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
-    use \Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
+    use ListOperation;
+    use CreateOperation;
+    use UpdateOperation;
+    use DeleteOperation;
+    use ShowOperation;
 
     public function setup()
     {
@@ -29,6 +36,7 @@ class ProjectCrudController extends CrudController
         $this->crud->setRoute(config('backpack.base.route_prefix') . '/project');
         $this->crud->setEntityNameStrings('project', 'projects');
         $this->crud->addClause("orderBy","created_at","desc");
+        $this->crud->setShowView("vendor.backpack.crud.showProject");
     }
 
     protected function setupListOperation()
@@ -68,7 +76,7 @@ class ProjectCrudController extends CrudController
     /**
      * Store a newly created resource in the database.
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function store()
     {
@@ -77,7 +85,7 @@ class ProjectCrudController extends CrudController
         $request = $this->crud->validateRequest();
 
         $data = $this->crud->getStrippedSaveRequest();
-        $data["slug"] = \Str::slug($data["name"],"-") . "-" . time();
+        $data["slug"] = Str::slug($data["name"],"-") . "-" . time();
         $data["created_by"] = backpack_user()->id;
         $data["document"] = array_filter($data["document"]);
 
@@ -88,7 +96,7 @@ class ProjectCrudController extends CrudController
         $this->addMember($item,$data["user_id"] ?? []);
 
         // show a success message
-        \Alert::success(trans('backpack::crud.insert_success'))->flash();
+        Alert::success(trans('backpack::crud.insert_success'))->flash();
 
         // save the redirect choice for next time
         $this->crud->setSaveAction();
@@ -124,7 +132,7 @@ class ProjectCrudController extends CrudController
         }
 
         // show a success message
-        \Alert::success(trans('backpack::crud.update_success'))->flash();
+        Alert::success(trans('backpack::crud.update_success'))->flash();
 
         // save the redirect choice for next time
         $this->crud->setSaveAction();
@@ -276,5 +284,70 @@ class ProjectCrudController extends CrudController
                 return $entry->end_at->diffForHumans();
             }
         ]);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param int $id
+     *
+     * @return Response
+     */
+    public function show($id)
+    {
+        $this->crud->hasAccessOrFail('show');
+
+        // get entry ID from Request (makes sure its the last ID for nested resources)
+        $id = $this->crud->getCurrentEntryId() ?? $id;
+        $setFromDb = $this->crud->get('show.setFromDb');
+
+        // get the info for that entry
+        $this->data['entry'] = $this->crud->getEntry($id);
+        $this->data["entry"]->created_by = $this->data["entry"]->user->name;
+        $this->data['crud'] = $this->crud;
+        $this->data['title'] = $this->crud->getTitle() ?? trans('backpack::crud.preview').' '.$this->crud->entity_name;
+
+        // set columns from db
+        if ($setFromDb) {
+            $this->crud->setFromDb();
+        }
+
+        // cycle through columns
+        foreach ($this->crud->columns() as $key => $column) {
+
+            // remove any autoset relationship columns
+            if (array_key_exists('model', $column) && array_key_exists('autoset', $column) && $column['autoset']) {
+                $this->crud->removeColumn($column['key']);
+            }
+
+            // remove any autoset table columns
+            if ($column['type'] == 'table' && array_key_exists('autoset', $column) && $column['autoset']) {
+                $this->crud->removeColumn($column['key']);
+            }
+
+            // remove the row_number column, since it doesn't make sense in this context
+            if ($column['type'] == 'row_number') {
+                $this->crud->removeColumn($column['key']);
+            }
+
+            // remove columns that have visibleInShow set as false
+            if (isset($column['visibleInShow']) && $column['visibleInShow'] == false) {
+                $this->crud->removeColumn($column['key']);
+            }
+
+            // remove the character limit on columns that take it into account
+            if (in_array($column['type'], ['text', 'email', 'model_function', 'model_function_attribute', 'phone', 'row_number', 'select'])) {
+                $this->crud->modifyColumn($column['key'], ['limit' => 999]);
+            }
+        }
+
+        // remove preview button from stack:line
+        $this->crud->removeButton('show');
+
+        // remove bulk actions colums
+        $this->crud->removeColumns(['blank_first_column', 'bulk_actions']);
+
+        // load the view from /resources/views/vendor/backpack/crud/ if it exists, otherwise load the one in the package
+        return view($this->crud->getShowView(), $this->data);
     }
 }
