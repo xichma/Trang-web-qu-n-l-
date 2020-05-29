@@ -19,10 +19,9 @@ class Feature extends Model
     // protected $primaryKey = 'id';
     // public $timestamps = false;
     protected $guarded = ['id'];
-    // protected $fillable = [];
+    protected $fillable = ["name","slug","description","project_id"];
     // protected $hidden = [];
     // protected $dates = [];
-
     /*
     |--------------------------------------------------------------------------
     | FUNCTIONS
@@ -34,6 +33,9 @@ class Feature extends Model
     | RELATIONS
     |--------------------------------------------------------------------------
     */
+    public function tasks(){
+        return $this->hasMany(Task::class);
+    }
 
     /*
     |--------------------------------------------------------------------------

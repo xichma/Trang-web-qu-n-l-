@@ -16,11 +16,10 @@ class CreateTodosTable extends Migration
         Schema::create('todos', function (Blueprint $table) {
             $table->id();
             $table->string("content");
-            $table->string("slug")->unique();
             $table->tinyInteger("status")->default(0);
             $table->integer("task_id");
-            $table->integer("do_by");
-            $table->tinyInteger("priority")->default(0);
+            $table->integer("do_by")->nullable();
+            $table->tinyInteger("priority")->default(config("prioritize.not_important_not_urgent"));
             $table->timestamps();
         });
     }

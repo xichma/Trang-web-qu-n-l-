@@ -19,8 +19,11 @@ Route::get('/', function () {
 
 Route::group([
     "prefix" => "api",
-    "namespace" => "Api"
+    "namespace" => "Api",
 ],function(){
-   Route::get("users","UserController@index");
-   Route::get("users/id","UserController@show");
+    Route::get("users","UserController@index");
+    Route::get("users/assigned-to/{id}","UserController@assignedTo");
+    Route::get("users/id","UserController@show");
+    Route::get('project', 'ProjectController@index');
 });
+
