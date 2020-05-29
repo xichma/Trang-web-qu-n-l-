@@ -19,7 +19,7 @@
     data-dependencies="{{ isset($field['dependencies'])?json_encode(Arr::wrap($field['dependencies'])): json_encode([]) }}"
     data-placeholder="{{ $field['placeholder'] }}"
     data-minimum-input-length="{{ $field['minimum_input_length'] }}"
-    data-data-source="{{ $field['data_source'] }}"
+    data-data-source="{{ $field['data_source'] }}@if(isset($entry))/{{$entry->project_id}}/@endif"
     data-method="{{ $field['method'] ?? 'GET' }}"
     data-field-attribute="{{ $field['attribute'] }}"
     data-connected-entity-key-name="{{ $connected_entity_key_name }}"
