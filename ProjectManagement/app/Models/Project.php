@@ -51,6 +51,10 @@ class Project extends Model
         return $this->hasMany(\App\Models\Document::class);
     }
 
+    public function tasks(){
+        return $this->hasMany(\App\Models\Task::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | SCOPES

@@ -15,10 +15,9 @@ class CreateSprintsTable extends Migration
     {
         Schema::create('sprints', function (Blueprint $table) {
             $table->id();
+            $table->string("name");
             $table->string("purposes");
             $table->string("slug")->unique();
-            $table->dateTime("stated_at")->nullable();
-            $table->dateTime("end_at")->nullable();
             $table->integer("project_id");
             $table->timestamps();
         });

@@ -17,7 +17,6 @@ class CreateDocumentsTable extends Migration
             $table->id();
             $table->string("name");
             $table->integer("project_id");
-            $table->string("description");
             $table->integer("uploaded_by");
             $table->string("path");
             $table->timestamps();
