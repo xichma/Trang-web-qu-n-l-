@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateFeaturesTable extends Migration
+class CreateFeatureSprintTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,10 @@ class CreateFeaturesTable extends Migration
      */
     public function up()
     {
-        Schema::create('features', function (Blueprint $table) {
+        Schema::create('feature_sprint', function (Blueprint $table) {
             $table->id();
-            $table->string("name");
-            $table->string("slug")->unique();
-            $table->string("description")->nullable();
-            $table->integer("project_id");
+            $table->integer("feature_id");
+            $table->integer("sprint_id");
             $table->timestamps();
         });
     }
@@ -30,6 +28,6 @@ class CreateFeaturesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('features');
+        Schema::dropIfExists('feature_sprint');
     }
 }
