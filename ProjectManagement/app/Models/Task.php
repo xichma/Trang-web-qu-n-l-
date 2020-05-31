@@ -24,6 +24,8 @@ class Task extends Model
     // protected $hidden = [];
      protected $dates = ["created_at","updated_at","started_at","end_at"];
 
+     const DONE = true;
+
     /*
     |--------------------------------------------------------------------------
     | FUNCTIONS
@@ -39,7 +41,7 @@ class Task extends Model
         return $this->belongsTo(Project::class);
     }
 
-    public function todos(){
+    public function todoes(){
         return $this->hasMany(Todo::class);
     }
 

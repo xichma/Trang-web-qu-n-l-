@@ -131,6 +131,8 @@ class ProjectCrudController extends CrudController
         if (isset($data["old-task-id"])){
             $data["old-task"] = array_combine($data["old-task-id"], $data["old-task-content"]);
             $this->updateOldTask($item,$data["old-task-id"],$data["old-task"]);
+        }else{
+            $this->updateOldTask($item,[]);
         }
         $this->deleteDocument($item, isset($data["old-documents"]) ? $data["old-documents"] : null);
         $this->deleteUser($item, isset($data["user_id"]) ? array_unique($data["user_id"]) : null);
@@ -225,14 +227,16 @@ class ProjectCrudController extends CrudController
         }
     }
 
-    private function updateOldTask($item,$task_ids,$tasks){
+    private function updateOldTask($item,$task_ids = [],$tasks = []){
         $item->tasks()->whereNotIn("id",$task_ids)->delete();
-        foreach ($tasks as $key => $task){
-            $record = Task::find($key);
-            if ($record->content != $task){
-                $record->content = $task;
+        if (!empty($tasks)){
+            foreach ($tasks as $key => $task){
+                $record = Task::find($key);
+                if ($record->content != $task){
+                    $record->content = $task;
+                }
+                $record->save();
             }
-            $record->save();
         }
     }
 
