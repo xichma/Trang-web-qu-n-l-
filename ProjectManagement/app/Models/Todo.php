@@ -22,6 +22,7 @@ class Todo extends Model
     // protected $fillable = [];
     // protected $hidden = [];
     // protected $dates = [];
+    CONST DONE = true;
 
     /*
     |--------------------------------------------------------------------------

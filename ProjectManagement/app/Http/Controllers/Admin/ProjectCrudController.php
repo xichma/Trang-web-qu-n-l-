@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use Alert;
 use App\Http\Requests\ProjectRequest;
 use App\Models\Project;
+use App\Models\Task;
 use App\User;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
@@ -13,7 +14,9 @@ use Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
 use Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
 use Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
+use Exception;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Str;
 
@@ -84,16 +87,18 @@ class ProjectCrudController extends CrudController
         // execute the FormRequest authorization and validation, if one is required
         $request = $this->crud->validateRequest();
 
-        $data = $this->crud->getStrippedSaveRequest();
+        $data = $request->all();
         $data["slug"] = Str::slug($data["name"],"-") . "-" . time();
         $data["created_by"] = backpack_user()->id;
         $data["document"] = array_filter($data["document"]);
+        $data["task"] = array_filter($data["task"]);
 
         // insert item in the db
         $item = Project::create($data);
         $this->data['entry'] = $this->crud->entry = $item;
         $this->uploadDocument($item,$data["document"]);
         $this->addMember($item,$data["user_id"] ?? []);
+        $this->addTask($item,$data["task"] ?? []);
 
         // show a success message
         Alert::success(trans('backpack::crud.insert_success'))->flash();
@@ -117,15 +122,23 @@ class ProjectCrudController extends CrudController
         $request = $this->crud->validateRequest();
         $data = $request->except(["_token","_method","http_referrer","save_action"]);
         $data["document"] = array_filter($data["document"]);
+        $data["task"] = array_filter($data["task"]);
         // update the row in the db
         $item = Project::find($request->get($this->crud->model->getKeyName()));
         $item->update($data);
         $this->data['entry'] = $this->crud->entry = $item;
 
+        if (isset($data["old-task-id"])){
+            $data["old-task"] = array_combine($data["old-task-id"], $data["old-task-content"]);
+            $this->updateOldTask($item,$data["old-task-id"],$data["old-task"]);
+        }else{
+            $this->updateOldTask($item,[]);
+        }
         $this->deleteDocument($item, isset($data["old-documents"]) ? $data["old-documents"] : null);
         $this->deleteUser($item, isset($data["user_id"]) ? array_unique($data["user_id"]) : null);
 
         $this->uploadDocument($item,$data["document"]);
+        $this->addTask($item,$data["task"]);
         if(isset($data["user_id"])){
             $data["user_id"] = array_unique($data["user_id"]);
             $this->addMember($item,$data["user_id"]);
@@ -167,6 +180,16 @@ class ProjectCrudController extends CrudController
         }
     }
 
+    private function addTask($item, $tasks){
+        if(!empty($tasks)){
+            foreach($tasks as $task){
+                $item->tasks()->create([
+                    "content" => $task
+                ]);
+            }
+        }
+    }
+
     private function deleteDocument($item, $oldDocuments = null){
         foreach($item->documents as $document){
             if (isset($oldDocuments)){
@@ -182,14 +205,7 @@ class ProjectCrudController extends CrudController
 
     private function deleteUser($item, $user_id = null){
         foreach ($item->users as $user){
-            if (isset($user_id)){
-                if (!in_array($user->id,$user_id)){
-                    $item->users()->detach($user->id);
-                }
-            }
-            else{
-                $item->users()->detach($user->id);
-            }
+            $item->users()->detach($user->id);
         }
     }
 
@@ -197,12 +213,29 @@ class ProjectCrudController extends CrudController
         if (!empty($documents)){
             $folder = now()->format("Y") ."/". now()->format("m") ."/". now()->format("d");
             foreach($documents as $key => $document){
-                $path = Storage::put("public/documents/" . $folder, $document);
-                $item->documents()->create([
-                    "name" => $document->getClientOriginalName(),
-                    "uploaded_by" => backpack_user()->id,
-                    "path" => $path
-                ]);
+                try {
+                    $path = Storage::put("public/documents/" . $folder, $document);
+                    $item->documents()->create([
+                        "name" => $document->getClientOriginalName(),
+                        "uploaded_by" => backpack_user()->id,
+                        "path" => $path
+                    ]);
+                }catch (Exception $exception){
+                    Log::error($exception->getMessage());
+                }
+            }
+        }
+    }
+
+    private function updateOldTask($item,$task_ids = [],$tasks = []){
+        $item->tasks()->whereNotIn("id",$task_ids)->delete();
+        if (!empty($tasks)){
+            foreach ($tasks as $key => $task){
+                $record = Task::find($key);
+                if ($record->content != $task){
+                    $record->content = $task;
+                }
+                $record->save();
             }
         }
     }
@@ -238,7 +271,7 @@ class ProjectCrudController extends CrudController
             "name" => "document",
             'upload' => true,
             'disk' => 'uploads',
-            "hint" => "You can upload images (.jpg, .png) or documents (.doc, .pdf, .docx) with max size about 5MB"
+            "hint" => "You can upload images (.jpg, .png) or documents (.doc, .pdf, .docx) with max size about 1MB"
         ]);
         $this->crud->addField([
             'label' => "Teams",
@@ -253,6 +286,13 @@ class ProjectCrudController extends CrudController
             'pivot' => true,
             'hint' => "you can search members to join this project by their email now or latter"
         ]);
+        $this->crud->addField(([
+            'label' => "Tasks",
+            'type' => "AddTask",
+            'name' => 'task[]',
+            'suffix' => "<button class=\"btn btn-primary btn-sm\" id='more-task' title=\"add task\"><span class=\"la la-plus\"></span> </button>",
+            'hint' => "you can add Task for this project or later"
+        ]));
     }
 
     private function addColumns(){

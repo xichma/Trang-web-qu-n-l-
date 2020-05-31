@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Task;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -19,7 +20,7 @@ class CreateTasksTable extends Migration
             $table->tinyInteger("priority")->default(config("prioritize.not_important_not_urgent"));
             $table->timestamp("started_at")->nullable();
             $table->timestamp("end_at")->nullable();
-            $table->tinyInteger("status")->default(0);
+            $table->tinyInteger("status")->default(!Task::DONE);
             $table->integer("project_id");
             $table->timestamps();
         });

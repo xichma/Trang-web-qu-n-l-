@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Todo;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +17,7 @@ class CreateTodosTable extends Migration
         Schema::create('todos', function (Blueprint $table) {
             $table->id();
             $table->string("content");
-            $table->tinyInteger("status")->default(0);
+            $table->tinyInteger("status")->default(!Todo::DONE);
             $table->integer("task_id");
             $table->integer("do_by")->nullable();
             $table->tinyInteger("priority")->default(config("prioritize.not_important_not_urgent"));
