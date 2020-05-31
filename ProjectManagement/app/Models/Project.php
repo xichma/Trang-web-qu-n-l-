@@ -21,7 +21,7 @@ class Project extends Model
     // public $timestamps = false;
     protected $guarded = ['id'];
     protected $fillable = ["name","slug","description","started_at","end_at","created_by"];
-    // protected $hidden = [];
+     protected $hidden = ["created_by","slug"];
     protected $dates = ["created_at","updated_at","started_at","end_at"];
     protected $casts = [
         'documents' => 'array'
@@ -48,11 +48,7 @@ class Project extends Model
     }
 
     public function documents(){
-        return $this->hasMany(\App\Models\Document::class);
-    }
-
-    public function tasks(){
-        return $this->hasMany(\App\Models\Task::class);
+        return $this->hasMany(Document::class);
     }
 
     /*
