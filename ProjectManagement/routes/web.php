@@ -14,5 +14,37 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/admin');
 });
+
+Route::group([
+    "prefix" => "api",
+    "namespace" => "Api",
+    "as" => "api."
+],function(){
+    Route::get("users",[
+        "uses" => "UserController@index",
+        "as"   => "user.index"
+    ]);
+    Route::get("users/assigned-to/{id}",[
+        "uses" => "UserController@assignedTo",
+        "as"   => "user.assignedTo"
+    ]);
+    Route::get("users/id",[
+        "uses" => "UserController@show",
+        "as"   => "user.show"
+    ]);
+    Route::get('project', [
+        "uses" => "ProjectController@index",
+        "as"   => "project.index"
+    ]);
+    Route::get('task/{id}', [
+        "uses" => "TaskController@updateStatus",
+        "as"   => "task.updateStatus"
+    ]);
+    Route::get('todo/{id}', [
+        "uses" => "TodoController@updateStatus",
+        "as"   => "todo.updateStatus"
+    ]);
+});
+
