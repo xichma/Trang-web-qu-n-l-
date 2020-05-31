@@ -2,7 +2,6 @@
 
 namespace App;
 
-use App\Models\Project;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -37,12 +36,4 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-
-    public function projectMadeByMe(){
-        return $this->hasMany(Project::class,"created_by");
-    }
-
-    public function projectJoined(){
-        return $this->belongsTo(Project::class);
-    }
 }

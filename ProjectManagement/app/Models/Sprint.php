@@ -19,9 +19,9 @@ class Sprint extends Model
     // protected $primaryKey = 'id';
     // public $timestamps = false;
     protected $guarded = ['id'];
-     protected $fillable = ["name","slug","purposes","project_id"];
+    // protected $fillable = [];
     // protected $hidden = [];
-//    protected $dates = [];
+    // protected $dates = [];
 
     /*
     |--------------------------------------------------------------------------
@@ -34,13 +34,6 @@ class Sprint extends Model
     | RELATIONS
     |--------------------------------------------------------------------------
     */
-    public function project(){
-        return $this->belongsTo(Project::class);
-    }
-
-    public function features(){
-        return $this->belongsToMany(Feature::class);
-    }
 
     /*
     |--------------------------------------------------------------------------

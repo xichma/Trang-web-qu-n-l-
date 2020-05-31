@@ -17,7 +17,7 @@ class CreateFeaturesTable extends Migration
             $table->id();
             $table->string("name");
             $table->string("slug")->unique();
-            $table->string("description")->nullable();
+            $table->string("description");
             $table->integer("project_id");
             $table->timestamps();
         });

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\User;
 use Backpack\CRUD\app\Models\Traits\CrudTrait;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,9 +19,9 @@ class Task extends Model
     // protected $primaryKey = 'id';
     // public $timestamps = false;
     protected $guarded = ['id'];
-     protected $fillable = ["content","priority","started_at","end_at","status","project_id"];
+    // protected $fillable = [];
     // protected $hidden = [];
-     protected $dates = ["created_at","updated_at","started_at","end_at"];
+    // protected $dates = [];
 
     /*
     |--------------------------------------------------------------------------
@@ -35,17 +34,6 @@ class Task extends Model
     | RELATIONS
     |--------------------------------------------------------------------------
     */
-    public function project(){
-        return $this->belongsTo(Project::class);
-    }
-
-    public function todos(){
-        return $this->hasMany(Todo::class);
-    }
-
-    public function users(){
-        return $this->belongsToMany(User::class);
-    }
 
     /*
     |--------------------------------------------------------------------------
