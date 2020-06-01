@@ -14,6 +14,7 @@ Route::group([
     ],
     'namespace'  => 'App\Http\Controllers\Admin',
 ], function () { // custom admin routes
+    Route::get('/dashboard', 'DashboardController@index');
     Route::crud('project', 'ProjectCrudController');
     Route::crud('task', 'TaskCrudController');
     Route::crud('sprint', 'SprintCrudController');
