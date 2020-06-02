@@ -3,7 +3,7 @@
 namespace App;
 
 use App\Models\Project;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Task;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -44,5 +44,8 @@ class User extends Authenticatable
 
     public function projectJoined(){
         return $this->belongsTo(Project::class);
+    }
+    public function tasks(){
+        return $this->belongsToMany(Task::class);
     }
 }

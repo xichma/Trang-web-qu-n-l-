@@ -17,7 +17,7 @@ Route::group([
     Route::get('/dashboard', 'DashboardController@index');
     Route::crud('project', 'ProjectCrudController');
     Route::crud('task', 'TaskCrudController');
-//    Route::crud('sprint', 'SprintCrudController');
-//    Route::crud('todo', 'TodoCrudController');
-//    Route::crud('feature', 'FeatureCrudController');
+    Route::crud('sprint', 'SprintCrudController');
+    Route::crud('todo', 'TodoCrudController');
+    Route::crud('feature', 'FeatureCrudController');
 }); // this should be the absolute last line of this file
